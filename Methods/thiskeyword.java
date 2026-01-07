@@ -5,12 +5,12 @@ public class thiskeyword {
     public thiskeyword(int StartScore) {
         
         System.out.println("Score before this Match: " + Score);
-        Score = StartScore;
-        afterMatch(Score);
+        System.out.println("This match score: " + StartScore);
+        afterMatch(StartScore);
     }
     void afterMatch (int Score) {
-        System.out.println("This match score: " + Score);
-        this.Score = Score;
+        
+        this.Score += Score;
         System.out.println("Total career score: " + this.Score);
     }
     public static void main(String[] args) {
