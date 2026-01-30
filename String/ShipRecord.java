@@ -6,7 +6,7 @@ public class ShipRecord {
     private String date;
     private String status;
 
-    public ShipRecord(int shipId, String port, String date, String status) {
+    public ShipRecord(String shipId, String port, String date, String status) {
         this.shipId = shipId;
         this.port = port.intern();
         this.date = date;
@@ -40,7 +40,7 @@ public class ShipRecord {
      */
     @Override
     public String toString() {
-        return String.format("[Ship: %d | Port: %s | Date: %s | Status: %s]", shipId, port, date, status);
+        return String.format("[Ship: %s | Port: %s | Date: %s | Status: %s]", shipId, port, date, status);
     }
 }
 
