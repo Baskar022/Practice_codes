@@ -11,5 +11,8 @@ public class LogIngestor {
         LogIngestor logs = new LogIngestor();
         String[] shipLog = logs.parseLog(rawLog);
         
+        for (String value: shipLog){
+            System.out.println(value);
+        }
     }
 }
