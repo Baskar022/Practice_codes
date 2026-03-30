@@ -10,7 +10,7 @@ interface Taxable {
 
  	default void IRS(String SSN, String fillingStatus, String name, String address) {
  		System.out.println("-----IRS Form-----");
- 		System.out.println("TaxpayerLegal Name: " + name);
+ 		System.out.println("Taxpayer Legal Name: " + name);
  		System.out.println("Social Security Number: " + SSN);
  		System.out.println("Fillng Status: " + fillingStatus);
  		System.out.println("Taxpayer Address: " + address);
@@ -62,6 +62,16 @@ abstract class Employee implements Payable {
    	this.UID = UID;
    	this.salary = salary;
    }
+
+   @Override
+   public boolean equals (Employee emp) {
+   	if (Object.equals(this.UID, emp.getUID())) {return true;}
+   }
+
+   @Override
+   public String hashcode () {
+   	return Objects.hash(getUID());
+   }
 }
 class FTEmployee extends Employee implements Payable, Taxable, AccessControl.PhysicalRoles, AccessControl.SystemRoles {
  	@Override
@@ -72,6 +82,16 @@ class FTEmployee extends Employee implements Payable, Taxable, AccessControl.Phy
  	public void getTax (double salary) {
  		double totalTax = salary * 0.10;
  		System.out.println(getName() + " Total Tax is " + totalTax);
+ 	}
+
+ 	@Override
+ 	public boolean officeAccess() {
+ 		return true;
+ 	}
+
+ 	@Override 
+ 	public boolean databaseAccess () {
+ 		return true;
  	}
 
 	public FTEmployee (String name, String UID, double salary) {
@@ -101,7 +121,7 @@ class ContractEmployee extends Employee implements Payable, Taxable, AccessContr
 	}
 }
 
-class AIAgents extends Employee implements Payable, AccessControl {
+class AIAgents extends Employee implements Payable, AccessControl, HighlyClassified {
 
    private int duration;
    public int getDuration() {return duration;}
@@ -119,11 +139,12 @@ class AIAgents extends Employee implements Payable, AccessControl {
 public class HRSystem {
 
 	public static void main(String[] args) {
-		List<Employee> staffs = List.of(new FTEmployee("John", "100", 150000), new AIAgents("GPT", "200", 95000), new ContractEmployee("Brock", "151", 75000));
+			HashSet<Employee> staffs = Set.of(new FTEmployee("John", "100", 150000), new FTEmployee("John", "100", 150000), new AIAgents("GPT", "200", 95000), new ContractEmployee("Brock", "151", 75000));
+			System.out.println(staffs.size());
 			PersonalFilter highSalaryEarner = emp -> emp.getSalary() > 100000;
 		  for (Employee e : staffs) {
 			if (highSalaryEarner.filter(e)) {
-				System.out.println("ALERT: " + e.getName() + "is High Earner & his salary is" + e.getSalary());
+				System.out.println("ALERT: " + e.getName() + " is High Earner & his salary is " + e.getSalary());
 			}
 			e.paySalary(e.getSalary());
 			if (e instanceof Taxable) {
