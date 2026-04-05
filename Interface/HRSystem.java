@@ -1,5 +1,10 @@
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 interface Payable {
 	void paySalary(double amount);
@@ -64,13 +69,16 @@ abstract class Employee implements Payable {
    }
 
    @Override
-   public boolean equals (Employee emp) {
-   	if (Object.equals(this.UID, emp.getUID())) {return true;}
+   public boolean equals (Object obj) {
+   	if(this == obj) return true;
+   	if ( obj == null || getClass() != obj.getClass()) return false;
+   	Employee emp = (Employee) obj;
+   	return java.util.Objects.equals(this.getUID(), emp.getUID());
    }
 
    @Override
-   public String hashcode () {
-   	return Objects.hash(getUID());
+   public int hashCode () {
+   	return java.util.Objects.hash(getUID());
    }
 }
 class FTEmployee extends Employee implements Payable, Taxable, AccessControl.PhysicalRoles, AccessControl.SystemRoles {
@@ -139,9 +147,27 @@ class AIAgents extends Employee implements Payable, AccessControl, HighlyClassif
 public class HRSystem {
 
 	public static void main(String[] args) {
-			HashSet<Employee> staffs = Set.of(new FTEmployee("John", "100", 150000), new FTEmployee("John", "100", 150000), new AIAgents("GPT", "200", 95000), new ContractEmployee("Brock", "151", 75000));
+
+		Set<Employee> staffs = new HashSet<>(List.of(
+			new FTEmployee("John", "100", 150000),
+			new FTEmployee("John", "100", 150000),
+			new ContractEmployee("Brock", "151", 75000),
+			new AIAgents("GPT", "200", 95000)
+		));
+			
 			System.out.println(staffs.size());
 			PersonalFilter highSalaryEarner = emp -> emp.getSalary() > 100000;
+		  
+		  Map<String, Employee> employeeDatabase = new HashMap<> ();
+		  for (Employee e:staffs) {
+		  	employeeDatabase.put(e.getUID(), e);
+		  }
+
+		  Employee fetchedData = employeeDatabase.get("100");
+		  if (fetchedData != null) {
+		  	System.out.println("INSTANT FETCH: UID 100 belngs to: " + fetchedData.getName());
+		  }
+
 		  for (Employee e : staffs) {
 			if (highSalaryEarner.filter(e)) {
 				System.out.println("ALERT: " + e.getName() + " is High Earner & his salary is " + e.getSalary());
