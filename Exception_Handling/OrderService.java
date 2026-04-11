@@ -1,83 +1,82 @@
-import java.lang.IOException;
+import java.io.IOException;
 import java.lang.*;
 
 interface PaymentGateway{
-	void charge(double amount) throws IOException, Exception;
+	void charge(double amount) throws Exception;
 }
 
-class Stripe extends PaymentGateway {
+class Stripe implements PaymentGateway {
 	@Override
-	void charge(double amount) throws IOExeption, Exception {
-		try {
-		System.out.println("===TRANSACTION STARTED===");
-		final int Transaction_ID = System.currentTimeMillis();
-		System.out.println("Transaction Id: " + Transaction_ID);
-		throw new ConnectionLostException();
-		System.out.println("payment proces...");
-		System.out.println("Transaction " + Transaction_ID + " Successful");
-		System.out.println("===TRANSACTION COMPLETED===");
-	}
-	catch (ConnectionLostException e) {
-		System.out.println("Connection lost: ", e);
-	}
-	catch ( IOException e) {
-		System.out.println("Exception Occured: ", e);
-	}
-	catch (Exception e) {
-		System.out.println("Error Occured: ", e);
-	}
+	public void charge(double amount) throws IOException{
+		System.out.println("Connecting to Stripe gateway..");
+		//for network timeout
+		throw new IOException("Stripe API timeout");
 	}
 }
 
-class OutOfStockException extends Exception {
-	public OutOfStockException(Exception e){
-		super(e);
+class OutOfStockException extends RuntimeException {
+	public OutOfStockException(String message){
+			super(message);
 	}
 }
 
-class OrderProcessingException extends Exception {
-	public OrderProcessingException(Exception e) {
-		super(e);
+class OrderProcessingException extends RuntimeException {
+	public OrderProcessingException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }
 
 public class OrderService {
 
-	void processOrder (String name, int quantity, double price) throws IllegalArgumentException, IOException {
-
+	void processOrder (String name, int quantity, double price) {
+		System.out.println("\n*** Initializing Order: " + name + " ***");
 		try {
-		Optional<int> itemQuantity = Optional.ofNullable(quantity);
-		if (quantity > 10) {
-			throw new OutOfStockException("More Than Available Stock");	
+			if (quantity > 10) {
+			throw new OutOfStockException("Required quantity (" + quantity + ") More Than Available Stock");	
+		}
+		if (quantity <= 0 ) {
+			throw new IllegalArgumentException("Quantity should be greater than ZERO");
 		}
 
 		PaymentGateway paymentDeduct = new Stripe();
-		Stripe.charge(price);
+		paymentDeduct.charge(price * quantity);
+		System.out.println("Payment Successful");
 
 		}
 		catch (IllegalArgumentException e) {
-			System.out.println("Invalid Quantity: ", e);
+			System.out.println("Invalid Argument: " + e.getMessage());
 		} 
 		catch (OutOfStockException e) {
-			System.out.println("Out of Stock: ", e);
+			System.out.println("Inventory Error " + e.getMessage());
 		}
-		catch (IOException e) {
-			throw new OrderProcessingException("Processing Exception: ",e);
-		}
+		
 		catch (Exception e){
-			System.out.println("Exception occurred: ", e);
+			throw new OrderProcessingException("Payment Processing Failed", e);
+		}
+		finally {
+			System.out.println("==AUDIT: Checkout process end for item: " + name +"==");
 		}
 	}
 
 	public static void main (String[] args) {
-		OrderService john = new OrderService();
-		OrderService brock = new OrderService();
-		OrderService rock = new OrderService();
-		OrderService ortan = new OrderService();
+		OrderService service = new OrderService();
+		try {
+			service.processOrder("Shoes", -5, 500);
+			service.processOrder("Shirt", 12, 5500);
+			service.processOrder("Mobile", 2, 65000);
+		}
+		catch (OrderProcessingException e){
+			System.err.println("\nCRITICAL SYSTEM ALERT");
+			System.err.println("Business reason: " + e.getMessage());
+			System.err.println("Technical root cause: " + e.getCause().getMessage());
+		}
 
-		john.processOrder("Shoes", "Two", 500);
-		brock.processOrder("Shirt", 12, 5500);
-		rock.processOrder("Mobile", 2, 65000);
-		ortan.processOrder("Laptop", 1, 78000);
+		try {
+			service.processOrder("Laptop", 1, 78000);
+		}
+		catch (OrderProcessingException e){
+			System.err.println("Laptop Order failed :" + e.getMessage());
+		}
+		
 	}
 }
